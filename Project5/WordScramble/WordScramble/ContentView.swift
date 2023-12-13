@@ -16,6 +16,8 @@ struct ContentView: View {
   @State private var errorMessage = ""
   @State private var showingError = false
   
+  @State private var score = 0
+  
   var body: some View {
     NavigationStack {
       List {
@@ -41,29 +43,42 @@ struct ContentView: View {
       } message: {
         Text(errorMessage)
       }
+      .toolbar() {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Restart") {
+            startGame()
+          }
+        }
+        ToolbarItem(placement: .bottomBar) {
+          Text("Your score is: \(score)")
+        }
+      }
     }
   }
   
   func addNewWord() {
-    let awnser = newWord.lowercased().trimmingCharacters(in: .whitespaces)
+    let answer = newWord.lowercased().trimmingCharacters(in: .whitespaces)
     
-    guard awnser.count > 0 else { return }
-    guard isOriginal(word: awnser) else {
+    guard answer == newWord else { return }
+    guard answer.count >= 3 else { return }
+    guard isOriginal(word: answer) else {
       wordError(title: "Word used already", message: "Be more original")
       return
     }
-    guard isPossible(word: awnser) else {
+    guard isPossible(word: answer) else {
       wordError(title: "Word not possible", message: "You can't spell that word from \(rootWord)")
       return
     }
-    guard isReal(word: awnser) else {
+    guard isReal(word: answer) else {
       wordError(title: "Word not recognized", message: "You can't just make them up, you know!")
       return
     }
     
     withAnimation {
-      usedWords.insert(awnser, at: 0)
+      usedWords.insert(answer, at: 0)
     }
+    score += answer.count
+    
     newWord = ""
   }
   
@@ -73,6 +88,7 @@ struct ContentView: View {
         let allWords = startWords.components(separatedBy: "\n")
         
         rootWord = allWords.randomElement() ?? "silkworm"
+        score = 0
         
         return
       }
