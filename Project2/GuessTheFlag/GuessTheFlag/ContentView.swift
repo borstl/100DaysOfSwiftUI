@@ -32,6 +32,32 @@ extension View {
   }
 }
 
+struct RotatingButton: View {
+  @State private var rotationAmount = 0.0
+  @State private var opacityAmount = 1.0
+  
+  let id: Int
+  let correctAwnser: Bool
+  let flagLabel: FlagImage
+  let action: () -> Void
+  
+  var body: some View {
+    Button() {
+      withAnimation {
+        rotationAmount += 360
+        if !correctAwnser {
+          opacityAmount -= 0.75
+        }
+        action()
+      }
+    } label: {
+      flagLabel
+    }
+    .rotation3DEffect(.degrees(rotationAmount), axis: (x: 0.0, y: 1.0, z: 0.0))
+    .opacity(opacityAmount)
+  }
+}
+
 struct ContentView: View {
   @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
   @State private var correctAwnser = Int.random(in: 0...2)
@@ -41,6 +67,9 @@ struct ContentView: View {
   @State private var scoreTitle = ""
   @State private var round = 1
   @State private var score = 0
+  
+  @State private var selectedButton = 4
+  @State private var animationAmount = 1.0
   
   var body: some View {
     ZStack {
@@ -63,15 +92,20 @@ struct ContentView: View {
             
             Text(countries[correctAwnser])
               .titleStyle()
-              //.font(.largeTitle.weight(.semibold))
+            //.font(.largeTitle.weight(.semibold))
           }
           
           ForEach(0..<3) { number in
-            Button() {
+            RotatingButton(id: number, 
+                           correctAwnser: number == correctAwnser ? true : false,
+                           flagLabel: FlagImage(countries: countries, number: number)) {
               flagTapped(number)
-            } label: {
-              FlagImage(countries: countries, number: number)
+              selectedButton = number
+              withAnimation {
+                animationAmount -= 0.5
+              }
             }
+            .scaleEffect(number == selectedButton ? 1.0 : animationAmount)
           }
         }
         .frame(maxWidth: .infinity)
@@ -120,6 +154,7 @@ struct ContentView: View {
   func askQuestion() {
     countries.shuffle()
     correctAwnser = Int.random(in: 0...2)
+    animationAmount = 1.0
     round += 1
   }
   
