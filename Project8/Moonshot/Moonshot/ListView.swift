@@ -14,9 +14,7 @@ struct ListView: View {
   var body: some View {
     LazyVStack {
       ForEach(missions) { mission in
-        NavigationLink {
-          MissionView(mission: mission, astronauts: astronauts)
-        } label: {
+        NavigationLink(value: mission) {
           VStack(alignment: .leading) {
             HStack {
               VStack {
@@ -44,7 +42,9 @@ struct ListView: View {
           }
         }
       }
-      ThickDivider()
+      .navigationDestination(for: Mission.self) { mission in
+        MissionView(mission: mission, astronauts: astronauts)
+      }
     }
   }
 }
